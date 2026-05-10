@@ -96,6 +96,8 @@ pytest -v
 
 ### Hasil Test
 
+![pytest run, 101 passed](docs/test-result.png)
+
 | Modul | Test | Coverage |
 |-------|------|----------|
 | `test_number_theory` | 18 | Known primes/composites, Carmichael numbers, Mersenne prime, generate_prime bit-length |
