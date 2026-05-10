@@ -4,7 +4,7 @@ import secrets
 
 import pytest
 
-from rsa_oaep.keyio import (
+from rsa_oaep.key_io import (
     load_private_key,
     load_public_key,
     save_private_key,
