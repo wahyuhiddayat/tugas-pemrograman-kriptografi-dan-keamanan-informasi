@@ -23,18 +23,26 @@ __all__ = [
 
 @dataclass(frozen=True)
 class PublicKey:
+    """RSA public key holding the modulus n and public exponent e."""
+
     n: int
     e: int
 
 
 @dataclass(frozen=True)
 class PrivateKey:
+    """RSA private key holding the modulus n and private exponent d."""
+
     n: int
     d: int
 
 
 def generate_keypair(bits: int = 2048, e: int = 65537) -> tuple[PublicKey, PrivateKey]:
-    """Generate an RSA keypair with modulus of exactly `bits` bits."""
+    """Generate an RSA keypair whose modulus is exactly bits bits long.
+
+    Raises ValueError if bits is not an even integer of at least 16. Retries
+    prime generation internally until gcd(e, phi(n)) == 1 is satisfied.
+    """
     if bits < 16 or bits % 2 != 0:
         raise ValueError("bits must be an even integer >= 16")
 

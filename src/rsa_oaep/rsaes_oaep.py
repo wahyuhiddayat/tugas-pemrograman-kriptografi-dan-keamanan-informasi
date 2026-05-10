@@ -13,10 +13,12 @@ __all__ = ["encrypt", "decrypt"]
 
 
 def _key_size_bytes(n: int) -> int:
+    """Return the byte length of an RSA modulus n."""
     return (n.bit_length() + 7) // 8
 
 
 def _encrypt_block(pub: PublicKey, message: bytes) -> bytes:
+    """OAEP-encode message and encrypt it with the RSA primitive, returning one ciphertext block."""
     k = _key_size_bytes(pub.n)
     em = eme_oaep_encode(message, k)
     c = rsaep(pub, os2ip(em))
@@ -24,6 +26,7 @@ def _encrypt_block(pub: PublicKey, message: bytes) -> bytes:
 
 
 def _decrypt_block(priv: PrivateKey, block: bytes) -> bytes:
+    """Decrypt one ciphertext block with the RSA primitive and OAEP-decode the result."""
     k = _key_size_bytes(priv.n)
     if len(block) != k:
         raise ValueError("decryption error")

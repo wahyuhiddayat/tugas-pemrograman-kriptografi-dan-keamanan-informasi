@@ -18,7 +18,11 @@ HASH_LEN = 32  # SHA-256 digest size
 
 
 def mgf1(seed: bytes, mask_len: int) -> bytes:
-    """Mask Generation Function 1 with SHA-256 (RFC 8017 Section B.2.1)."""
+    """Return a pseudo-random byte string of length mask_len derived from seed.
+
+    Implements MGF1 with SHA-256 as specified in RFC 8017 Section B.2.1.
+    Raises ValueError if mask_len exceeds the maximum allowable output size.
+    """
     if mask_len < 0:
         raise ValueError("mask_len must be non-negative")
     if mask_len > (1 << 32) * HASH_LEN:
@@ -33,11 +37,16 @@ def mgf1(seed: bytes, mask_len: int) -> bytes:
 
 
 def _xor(a: bytes, b: bytes) -> bytes:
+    """Return the bytewise XOR of a and b."""
     return bytes(x ^ y for x, y in zip(a, b))
 
 
 def eme_oaep_encode(message: bytes, k: int, label: bytes = b"") -> bytes:
-    """EME-OAEP encode (RFC 8017 Section 7.1.1, step 2)."""
+    """Return the EME-OAEP encoding of message for an RSA modulus of k bytes.
+
+    Corresponds to step 2 of RSAES-OAEP-Encrypt in RFC 8017 Section 7.1.1.
+    Raises ValueError if the message is too long to fit in a single OAEP block.
+    """
     m_len = len(message)
     if m_len > k - 2 * HASH_LEN - 2:
         raise ValueError("message too long")
@@ -56,7 +65,12 @@ def eme_oaep_encode(message: bytes, k: int, label: bytes = b"") -> bytes:
 
 
 def eme_oaep_decode(em: bytes, k: int, label: bytes = b"") -> bytes:
-    """EME-OAEP decode (RFC 8017 Section 7.1.2, step 3)."""
+    """Recover the message from an EME-OAEP encoded buffer em.
+
+    Corresponds to step 3 of RSAES-OAEP-Decrypt in RFC 8017 Section 7.1.2.
+    All format and label mismatch errors are raised as ValueError with the
+    generic message "decryption error" to avoid oracle attacks.
+    """
     if len(em) != k or k < 2 * HASH_LEN + 2:
         raise ValueError("decryption error")
 

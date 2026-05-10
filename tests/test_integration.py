@@ -1,4 +1,4 @@
-"""End-to-end: generate keys -> save to disk -> load -> encrypt file -> decrypt file."""
+"""End-to-end tests covering key generation, disk I/O, and encrypt/decrypt cycles."""
 
 import secrets
 
@@ -16,11 +16,13 @@ from rsa_oaep.rsaes_oaep import decrypt, encrypt
 
 @pytest.fixture(scope="module")
 def keypair():
+    """Generate a 2048-bit keypair shared across all tests in this module."""
     return generate_keypair(bits=2048)
 
 
 @pytest.mark.parametrize("size", [5, 1024, 10 * 1024])
 def test_full_pipeline_with_disk_io(tmp_path, keypair, size):
+    """Verify that saving keys to disk and reloading them preserves encrypt/decrypt correctness."""
     pub, priv = keypair
     pub_path = tmp_path / "rsa.pub"
     priv_path = tmp_path / "rsa.priv"
@@ -52,11 +54,13 @@ def test_full_pipeline_with_disk_io(tmp_path, keypair, size):
     ],
 )
 def test_byte_patterns_roundtrip(keypair, pattern):
+    """Verify that structured and edge-case byte patterns survive an encrypt/decrypt roundtrip."""
     pub, priv = keypair
     assert decrypt(encrypt(pattern, pub), priv) == pattern
 
 
 def test_keyfile_persistence_across_runs(tmp_path, keypair):
+    """Verify that a key pair saved then reloaded in separate steps still encrypts and decrypts correctly."""
     pub, priv = keypair
     pub_path = tmp_path / "rsa.pub"
     priv_path = tmp_path / "rsa.priv"

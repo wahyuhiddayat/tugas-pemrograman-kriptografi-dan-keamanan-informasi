@@ -7,6 +7,7 @@ import secrets
 __all__ = ["is_probable_prime", "generate_prime", "egcd", "modinv"]
 
 
+# Quick trial division against small primes before running Miller-Rabin.
 _SMALL_PRIMES = (
     2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47,
     53, 59, 61, 67, 71, 73, 79, 83, 89, 97,
@@ -14,7 +15,12 @@ _SMALL_PRIMES = (
 
 
 def is_probable_prime(n: int, rounds: int = 40) -> bool:
-    """Return True if n is probably prime (Miller-Rabin with `rounds` random witnesses)."""
+    """Return True if n is probably prime, False if n is definitely composite.
+
+    Uses the Miller-Rabin test with the given number of independently chosen
+    random witnesses. The probability of a composite passing all rounds is at
+    most 4^(-rounds).
+    """
     if n < 2:
         return False
     for p in _SMALL_PRIMES:
@@ -44,7 +50,7 @@ def is_probable_prime(n: int, rounds: int = 40) -> bool:
 
 
 def generate_prime(bits: int) -> int:
-    """Generate a random probable prime of exactly `bits` bits."""
+    """Return a random probable prime whose bit length is exactly bits."""
     if bits < 2:
         raise ValueError("bits must be >= 2")
     while True:
@@ -54,7 +60,7 @@ def generate_prime(bits: int) -> int:
 
 
 def egcd(a: int, b: int) -> tuple[int, int, int]:
-    """Extended Euclidean algorithm. Returns (g, x, y) such that a*x + b*y = g = gcd(a, b)."""
+    """Return (g, x, y) satisfying a*x + b*y == g where g == gcd(a, b)."""
     old_r, r = a, b
     old_s, s = 1, 0
     old_t, t = 0, 1

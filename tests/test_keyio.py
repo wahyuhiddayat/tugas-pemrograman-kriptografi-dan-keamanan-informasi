@@ -1,3 +1,5 @@
+"""Tests for hex-encoded RSA key file I/O."""
+
 import pytest
 
 from rsa_oaep.keyio import (
@@ -11,12 +13,14 @@ from rsa_oaep.rsa import PrivateKey, PublicKey, generate_keypair
 
 @pytest.fixture(scope="module")
 def keypair():
+    """Generate a 2048-bit keypair shared across all tests in this module."""
     return generate_keypair(bits=2048)
 
 
 # Roundtrip
 
 def test_public_key_roundtrip(tmp_path, keypair):
+    """Verify that a public key saved to disk loads back equal to the original."""
     pub, _ = keypair
     path = tmp_path / "key.pub"
     save_public_key(pub, path)
@@ -24,6 +28,7 @@ def test_public_key_roundtrip(tmp_path, keypair):
 
 
 def test_private_key_roundtrip(tmp_path, keypair):
+    """Verify that a private key saved to disk loads back equal to the original."""
     _, priv = keypair
     path = tmp_path / "key.priv"
     save_private_key(priv, path)
@@ -33,6 +38,7 @@ def test_private_key_roundtrip(tmp_path, keypair):
 # File format
 
 def test_public_key_file_format(tmp_path, keypair):
+    """Verify that the public key file has exactly two lines in the expected hex format."""
     pub, _ = keypair
     path = tmp_path / "key.pub"
     save_public_key(pub, path)
@@ -44,6 +50,7 @@ def test_public_key_file_format(tmp_path, keypair):
 
 
 def test_private_key_file_format(tmp_path, keypair):
+    """Verify that the private key file has exactly two lines of valid lowercase hex."""
     _, priv = keypair
     path = tmp_path / "key.priv"
     save_private_key(priv, path)
@@ -57,6 +64,7 @@ def test_private_key_file_format(tmp_path, keypair):
 # Error cases
 
 def test_load_rejects_one_line(tmp_path):
+    """Verify that a file with only one line raises ValueError on load."""
     path = tmp_path / "bad.pub"
     path.write_text("abcdef\n", encoding="utf-8")
     with pytest.raises(ValueError):
@@ -64,6 +72,7 @@ def test_load_rejects_one_line(tmp_path):
 
 
 def test_load_rejects_invalid_hex(tmp_path):
+    """Verify that a file with non-hex content raises ValueError on load."""
     path = tmp_path / "bad.pub"
     path.write_text("notahex\n10001\n", encoding="utf-8")
     with pytest.raises(ValueError):
@@ -71,6 +80,7 @@ def test_load_rejects_invalid_hex(tmp_path):
 
 
 def test_load_tolerates_trailing_blank_lines(tmp_path):
+    """Verify that trailing blank or whitespace-only lines are ignored when loading."""
     path = tmp_path / "ok.pub"
     path.write_text("ff\n10001\n\n  \n", encoding="utf-8")
     pub = load_public_key(path)
@@ -79,6 +89,7 @@ def test_load_tolerates_trailing_blank_lines(tmp_path):
 
 
 def test_load_rejects_empty_file(tmp_path):
+    """Verify that an empty file raises ValueError on load."""
     path = tmp_path / "empty.pub"
     path.write_text("", encoding="utf-8")
     with pytest.raises(ValueError):
