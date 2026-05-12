@@ -1,2 +1,5 @@
+# Runtime dependency
+PyQt5>=5.15
+
 pytest>=8.0
 cryptography>=41.0 # test-only, validates the implementation against a reference, not a runtime dependency
