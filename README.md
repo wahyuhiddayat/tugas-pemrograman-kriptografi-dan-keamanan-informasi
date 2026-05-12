@@ -18,12 +18,18 @@ RNG dari `secrets` dan `os.urandom`, dan modular exponentiation dari `pow()`.
 ## Struktur
 
 ```
+app.py                  # Entry point GUI
+
 src/rsa_oaep/
 ├── number_theory.py    # Miller-Rabin, prime gen, modinv, egcd
 ├── rsa.py              # RSA keygen, RSAEP/RSADP, I2OSP/OS2IP
 ├── oaep.py             # MGF1-SHA256, EME-OAEP encode/decode
 ├── rsaes_oaep.py       # Top-level encrypt dan decrypt, chunking otomatis
 └── key_io.py           # Save/load kunci dalam format hex
+
+gui/
+├── __init__.py
+└── main_window.py      # GUI PyQt5
 
 tests/
 ├── test_number_theory.py
@@ -32,7 +38,8 @@ tests/
 ├── test_rsaes_oaep.py
 ├── test_key_io.py
 ├── test_integration.py
-└── test_interop.py
+├── test_interop.py
+└── test_file_types.py  # Roundtrip test lintas tipe file (GUI integration)
 ```
 
 ## Modul
@@ -87,6 +94,26 @@ per blok (`k - 2*hLen - 2 = 256 - 64 - 2`). Plaintext yang lebih panjang
 dipecah otomatis jadi beberapa blok, masing-masing menghasilkan ciphertext
 256 byte yang digabung berurutan. Dekripsi membalik proses ini per blok.
 
+## GUI
+
+Run GUI dengan:
+
+```powershell
+python app.py
+```
+
+Fitur:
+- **Encrypt** dan **Decrypt** mode via radio button
+- Generate Key Pair (simpan `public.key` / `private.key`)
+- File picker untuk input, kunci, dan output
+- Progress bar + status bar (proses berjalan di background thread)
+
+### Screenshot
+
+![Generate Key Pair](docs/screenshot-keygen.png)
+![Encrypt Success](docs/screenshot-encrypt.png)
+![Decrypt Success](docs/screenshot-decrypt.png)
+
 ## Setup dan Test
 
 ```powershell
@@ -107,6 +134,9 @@ pytest -v
 | `test_key_io` | 9 | Hex format roundtrip, malformed file detection |
 | `test_integration` | 7 | End-to-end disk I/O dengan berbagai ukuran (5B/1KB/10KB) |
 | `test_interop` | 9 | Cross-validation 2 arah dengan library `cryptography` sebagai referensi |
+| `test_file_types` | 8 | Roundtrip encrypt→decrypt untuk .txt, .png, .jpg, .mp3, .mp4, .pdf, .bin, large .txt (512 KB) |
+
+![pytest test_file_types, 8 passed](docs/test-result-file-types.png)
 
 `test_interop` melakukan cross-validation dua arah dengan library
 `cryptography` sebagai test-only dependency. Ciphertext dari implementasi
